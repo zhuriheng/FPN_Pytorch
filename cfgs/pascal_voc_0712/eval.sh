@@ -12,7 +12,7 @@ net="res101"
 log_time="2019-09-09-21-41"
 checkepoch="11"
 
-CUDA_VISIBLE_DEVICES=1 \
+CUDA_VISIBLE_DEVICES=2 \
 python test_net.py --exp_name ${exp_name} \
                         --dataset $dataset \
                         --net $net \
@@ -21,6 +21,7 @@ python test_net.py --exp_name ${exp_name} \
                         --checkepoch $checkepoch \
                         --checkpoint 8274 \
                         --cuda \
-                  > eval_${exp_name}_${dataset}_${net}_${log_time}_${checkepoch}.log 2>&1 &
+                        --soft_nms \
+                  > eval_${exp_name}_${dataset}_${net}_${log_time}_${checkepoch}_soft_nms.log 2>&1 &
 #                    --load_name
 #                    --soft_nms

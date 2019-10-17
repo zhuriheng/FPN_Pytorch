@@ -23,6 +23,9 @@ model_urls = {
   'resnet50': 'https://s3.amazonaws.com/pytorch/models/resnet50-19c8e357.pth',
   'resnet101': 'https://s3.amazonaws.com/pytorch/models/resnet101-5d3b4d8f.pth',
   'resnet152': 'https://s3.amazonaws.com/pytorch/models/resnet152-b121ed2d.pth',
+  'resnet50-caffe': 'https://drive.google.com/open?id=0B7fNdx_jAqhtbllXbWxMVEdZclE',
+  'resnet101-caffe': 'https://drive.google.com/open?id=0B7fNdx_jAqhtaXZ4aWppWV96czg',
+  'resnet152-caffe': 'https://drive.google.com/open?id=0B7fNdx_jAqhtMXU1N0VTZkN1dHc'
 }
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -115,6 +118,8 @@ class ResNet(nn.Module):
     self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
     self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
     self.layer4 = self._make_layer(block, 512, layers[3], stride=2)   # different
+    # it is slightly better whereas slower to set stride = 1
+    # self.layer4 = self._make_layer(block, 512, layers[3], stride=1)
     self.avgpool = nn.AvgPool2d(7)
     self.fc = nn.Linear(512 * block.expansion, num_classes)
 
@@ -217,16 +222,24 @@ def resnet152(pretrained=False):
 
 class resnet(_FPN):
   def __init__(self, classes, num_layers=101, pretrained=False, class_agnostic=False):
-    self.model_path = 'pretrained/resnet101_caffe.pth'
-    self.dout_base_model = 256
+    self.num_layers = num_layers
+    self.model_path = './pretrained/resnet{}_caffe.pth'.format(self.num_layers)
+    self.dout_base_model = 256  # different
     self.pretrained = pretrained
     self.class_agnostic = class_agnostic
 
     _FPN.__init__(self, classes, class_agnostic)
 
   def _init_modules(self):
-    resnet = resnet101()
-
+    if self.num_layers == 101:
+      resnet = resnet101()
+    elif self.num_layers == 50:
+      resnet = resnet50()
+    elif self.num_layers == 152:
+      resnet = resnet152()
+    else:
+      print("network is not defined")
+      pdb.set_trace()
     if self.pretrained == True:
       print("Loading pretrained weights from %s" %(self.model_path))
       state_dict = torch.load(self.model_path)

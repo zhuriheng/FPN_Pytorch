@@ -58,7 +58,7 @@ def parse_args():
                         help='set config keys', default=None,
                         nargs=argparse.REMAINDER)
     parser.add_argument('--load_dir', dest='load_dir',
-                        help='directory to load models', default="./ckpts",
+                        help='directory to load models', default="./output",
                         type=str)
     parser.add_argument('--log_time', dest='log_time',
                         help='log directory to load models', default=None,
@@ -135,7 +135,8 @@ if __name__ == '__main__':
         args.imdbval_name = "vg_150-50-50_minival"
         args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
 
-    args.cfg_file = "cfgs/{}/{}_ls.yml".format(args.dataset, args.net) if args.large_scale else "cfgs/{}/{}.yml".format(args.dataset, args.net)
+    args.cfg_file = "cfgs/{}/{}_ls.yml".format(args.dataset, args.net) if args.large_scale else "cfgs/{}/{}.yml".format(
+      args.dataset, args.net)
 
     if args.cfg_file is not None:
         cfg_from_file(args.cfg_file)
@@ -165,9 +166,7 @@ if __name__ == '__main__':
                              'fpn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
     # initilize the network here.
-    if args.net == 'vgg16':
-        fpn = vgg16(imdb.classes, pretrained=False, class_agnostic=args.class_agnostic)
-    elif args.net == 'res101':
+    if args.net == 'res101':
         fpn = resnet(imdb.classes, 101, pretrained=False, class_agnostic=args.class_agnostic)
     elif args.net == 'res50':
         fpn = resnet(imdb.classes, 50, pretrained=False, class_agnostic=args.class_agnostic)

@@ -24,7 +24,6 @@ import torch
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.optim as optim
-from datetime import datetime
 
 import torchvision.transforms as transforms
 from torch.utils.data.sampler import Sampler
@@ -71,7 +70,7 @@ def parse_args():
                         default=10000, type=int)
 
     parser.add_argument('--save_dir', dest='save_dir',
-                        help='directory to save models', default="/srv/share/jyang375/models", )
+                        help='directory to save models', default="./output", )
     parser.add_argument('--nw', dest='num_workers',
                         help='number of worker to load data',
                         default=0, type=int)
@@ -177,7 +176,8 @@ if __name__ == '__main__':
         # from model.utils.logger import Logger
         # # Set the logger
         # logger = Logger('./logs')
-        writer = SummaryWriter(comment=args.exp_name)
+        # writer = SummaryWriter(comment=args.exp_name)
+        writer = SummaryWriter("logs")
 
     # logging.basicConfig(filename="logs/"+args.net+"_"+args.dataset+"_"+str(args.session)+".log",
     #       filemode='w', level=logging.DEBUG)
@@ -416,18 +416,20 @@ if __name__ == '__main__':
                 _print("\t\t\trpn_cls: %.4f, rpn_box: %.4f, rcnn_cls: %.4f, rcnn_box %.4f" \
                        % (loss_rpn_cls, loss_rpn_box, loss_rcnn_cls, loss_rcnn_box), )
                 if args.use_tfboard:
-                    # info = {
-                    #     'loss': loss_temp,
-                    #     'loss_rpn_cls': loss_rpn_cls,
-                    #     'loss_rpn_box': loss_rpn_box,
-                    #     'loss_rcnn_cls': loss_rcnn_cls,
-                    #     'loss_rcnn_box': loss_rcnn_box,
-                    # }
+                    info = {
+                        'loss': loss_temp,
+                        'loss_rpn_cls': loss_rpn_cls,
+                        'loss_rpn_box': loss_rpn_box,
+                        'loss_rcnn_cls': loss_rcnn_cls,
+                        'loss_rcnn_box': loss_rcnn_box,
+                    }
+                    writer.add_scalars("logs_{}_{}_s_{}/losses".format(args.dataset, args.net, args.session), info,
+                                       (epoch - 1) * iters_per_epoch + step)
                     # for tag, value in info.items():
                     #     logger.scalar_summary(tag, value, step)
-                    scalars = [loss_temp, loss_rpn_cls, loss_rpn_box, loss_rcnn_cls, loss_rcnn_box]
-                    names = ['loss', 'loss_rpn_cls', 'loss_rpn_box', 'loss_rcnn_cls', 'loss_rcnn_box']
-                    write_scalars(writer, scalars, names, iters_per_epoch * (epoch - 1) + step, tag='train_loss')
+                    # scalars = [loss_temp, loss_rpn_cls, loss_rpn_box, loss_rcnn_cls, loss_rcnn_box]
+                    # names = ['loss', 'loss_rpn_cls', 'loss_rpn_box', 'loss_rcnn_cls', 'loss_rcnn_box']
+                    # write_scalars(writer, scalars, names, iters_per_epoch * (epoch - 1) + step, tag='train_loss')
 
                 loss_temp = 0
                 start = time.time()
@@ -456,3 +458,5 @@ if __name__ == '__main__':
 
         end = time.time()
         print(end - start)
+    if args.use_tfboard:
+        writer.close()
